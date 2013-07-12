@@ -23,6 +23,7 @@ public class CameraFromIMU : MonoBehaviour {
 	public float _rotateLeftRightKeyAngle = 0.0f; // Current angular rotation around world's up axis caused by Q/E keys.
 	public float _maxLiftVelocity = 25.0f; // Velocity upwards when up is pressed (eventually, when left and right are down).
 	public float _maxFallVelocity = 50.0f; // Velocity downwards when pressing downwards.
+	public float _yawInfluenceFromRoll = 0.01f;
 	
 	// Use this for initialization
 	void Start () {
@@ -125,6 +126,19 @@ public class CameraFromIMU : MonoBehaviour {
 			_rotateLeftRightKeyAngle = (_rotateLeftRightKeyAngle-1.0f) % 360.0f;
 		else if (Input.GetKey (KeyCode.E))
 			_rotateLeftRightKeyAngle = (_rotateLeftRightKeyAngle+1.0f) % 360.0f;
+		
+		// But also rotate around world axis by an amount proportional to roll.
+		Debug.Log( q.eulerAngles.y );
+		float roll = q.eulerAngles.y;
+		if( roll > 180.0f ){
+			roll = roll - 360.0f;}
+		if(roll > 90.0f){
+			roll = 180.0f - roll;}
+		else if(roll < -90.0f){
+			roll = -180.0f - roll;}
+		_rotateLeftRightKeyAngle = (_rotateLeftRightKeyAngle - (roll * _yawInfluenceFromRoll)) % 360.0f;
+		
+		// Do that rotation.
 		transform.Rotate( Vector3.up * _rotateLeftRightKeyAngle, Space.World );
 			
 		// Fly forwards.
